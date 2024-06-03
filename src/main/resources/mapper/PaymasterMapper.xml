@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.paymaster.payroll.mapper.PaymasterMapper">
+    <select id="getActualWorkDetails" parameterType="com.paymaster.payroll.model.SearchCriteria" resultType="com.paymaster.payroll.dto.WorkDetailsDTO">
+        SELECT aw.user_id as "userId",
+               aw.working_day as "workingDay",
+               wd.is_holy as "isHoly",
+               aw.work_start as "workStart",
+               aw.work_end as "workEnd",
+               wt.is_hourly as "isHourly",
+               wt.daily_salary as "dailySalary",
+               wt.standard_work_start as "standardWorkStart",
+               wt.standard_work_end as "standardWorkEnd",
+               bt.break_type as "breakType",
+               bt.break_start as "breakStart",
+               bt.break_end as "breakEnd",
+               wt.overtime_rate as "overtimeRate"
+        FROM actual_work aw
+        JOIN payroll_user pu ON aw.user_id = pu.user_id
+        JOIN work_time wt ON pu.work_time_id = wt.id
+        JOIN break_time bt ON wt.id = bt.work_time_id
+        JOIN working_day wd ON wd.w_day = aw.working_day
+       WHERE 1=1
+       <if test="criteria.userId != null">
+           AND aw.user_id = #{criteria.userId}
+       </if>
+       <if test="criteria.searchStartDate != null and criteria.searchEndDate != null">
+           AND aw.working_day BETWEEN STR_TO_DATE(#{criteria.searchStartDate}, '%Y-%m-%d') AND DATE_ADD(STR_TO_DATE(#{criteria.searchEndDate}, '%Y-%m-%d'), INTERVAL 1 DAY)
+       </if>
+       ORDER BY aw.working_day
+    </select>
+</mapper>
